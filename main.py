@@ -1,7 +1,26 @@
+import math
 import pygame
+from pygame.math import clamp
+
+
+def map_vector_to_key(vec: pygame.Vector2, mappings: list):
+    if math.isnan(vec.x):
+        vec.x = 0.0
+    if math.isnan(vec.y):
+        vec.y = 0.0
+
+    x = round(clamp(vec.x, -1.0, 1.0)) + 1
+    y = round(clamp(vec.y, -1.0, 1.0)) + 1
+    return mappings[y][x]
 
 
 def main():
+
+    KEYMAP = [
+        ["↖", "↑", "↗"],
+        ["←", "*", "→"],
+        ["↙", "↓", "↘"]
+    ]
 
     listening = True
     pygame.joystick.init()
