@@ -1,6 +1,6 @@
 import math
 import pygame
-from pygame.math import Vector2, clamp
+from pygame.math import Vector2
 
 
 def map_vector_to_key(mappings: list, target: pygame.Vector2, source = Vector2(0.0, 0.0)):
@@ -13,40 +13,73 @@ def map_vector_to_key(mappings: list, target: pygame.Vector2, source = Vector2(0
     nan_to_zero(source)
     nan_to_zero(target)
 
-    target_x = round(clamp(target.x, -1.0, 1.0)) + 1
-    target_y = round(clamp(target.y, -1.0, 1.0)) + 1
-    source_x = round(clamp(source.x, -1.0, 1.0)) + 1
-    source_y = round(clamp(source.y, -1.0, 1.0)) + 1
-    # target = mappings[y][x]
-    relative_target = mappings[source_y][source_x][target_y][target_x]
+    def part(x):
+        return (x > 0.43) + (x >= -0.33)
 
+    target_x = part(target.x)
+    target_y = part(target.y)
+    source_x = part(source.x)
+    source_y = part(source.y)
+
+    relative_target = mappings[source_y][source_x][target_y][target_x]
     return relative_target
 
 
 def main():
 
-    N = [
-        ["↑↖", "↑↑", "↑↗"],
-        ["↑←", "↑*", "↑→"],
-        ["↑↙", "↑↓", "↑↘"]
-    ]
-
-    M = [
-        ["*↖", "*↑", "*↗"],
-        ["*←", "**", "*→"],
-        ["*↙", "*↓", "*↘"]
-    ]
-
-    S = [
-        ["↓↖", "↓↑", "↓↗"],
-        ["↓←", "↓*", "↓→"],
-        ["↓↙", "↓↓", "↓↘"]
-    ]
-
+    # TODO: make more intuitive?
     KEYMAP = [
-        [N, N, N],
-        [M, M, M],
-        [S, S, S]
+        [
+            [
+                ["s", "", ""],
+                ["", "w", ""],
+                ["", "", ""],
+            ],
+            [
+                ["", "r", ""],
+                ["", "g", ""],
+                ["", "", ""],
+            ],
+            [
+                ["", "", "o"],
+                ["", "u", ""],
+                [" ", "", ""],
+            ],
+        ],
+        [
+            [
+                ["", "", ""],
+                ["n", "m", ""],
+                ["", "", ""],
+            ],
+            [
+                ["j", "q", "b"],
+                ["k", "h", "p"],
+                ["v", "x", "y"],
+            ],
+            [
+                ["", "", " "],
+                ["", "l", "a"],
+                ["", " ", "\n"],
+            ],
+        ],
+        [
+            [
+                ["", "", " "],
+                ["", "c", ""],
+                ["t", "", ""],
+            ],
+            [
+                ["", "", ""],
+                ["", "f", ""],
+                [",", "i", "z"],
+            ],
+            [
+                ["", "", ""],
+                ["", "d", ""],
+                ["", "", "e"],
+            ],
+        ]
     ]
 
     listening = True
@@ -84,19 +117,6 @@ def main():
                 "x": joystick.get_axis(2),
                 "y": joystick.get_axis(3),
             }
-
-            # trackpads = [
-            #     {
-            #         "pressed": joystick.get_button(0),
-            #         "x": joystick.get_axis(4),
-            #         "y": joystick.get_axis(5),
-            #     },
-            #     {
-            #         "pressed": joystick.get_button(1),
-            #         "x": joystick.get_axis(2),
-            #         "y": joystick.get_axis(3),
-            #     }
-            # ]
 
             trackpad_pressed = TRACKPAD_RIGHT["pressed"]
             key_was_selected = (
