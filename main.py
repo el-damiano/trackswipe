@@ -1,30 +1,8 @@
-import math
+# TODO: rewrite in a better language for Steam Input integration and portability
 import pygame
-from pygame.math import Vector2
+
+from trackpad import Trackpad
 from evdev import uinput, ecodes as e
-
-
-def map_vector_to_key(mappings: list, target: pygame.Vector2, source = Vector2(0.0, 0.0)):
-    def nan_to_zero(vec: Vector2):
-        if math.isnan(vec.x):
-            vec.x = 0.0
-        if math.isnan(vec.y):
-            vec.y = 0.0
-
-    nan_to_zero(source)
-    nan_to_zero(target)
-
-    # TODO: figure out how to properly divide it
-    def part(x):
-        return (x > 0.33) + (x >= -0.33)
-
-    target_x = part(target.x)
-    target_y = part(target.y)
-    source_x = part(source.x)
-    source_y = part(source.y)
-
-    relative_target = mappings[source_y][source_x][target_y][target_x]
-    return relative_target
 
 
 def main():
@@ -84,6 +62,9 @@ def main():
         ]
     ]
 
+    TRACKPAD_LEFT = Trackpad(KEYMAP, 20)
+    TRACKPAD_RIGHT = Trackpad(KEYMAP, -20)
+
     listening = True
     pygame.joystick.init()
     joysticks = {}
@@ -91,7 +72,7 @@ def main():
     first_selection = None
     final_selection = None
 
-    with uinput.UInput() as ui:
+    with uinput.UInput() as user_input:
         while listening:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -109,42 +90,11 @@ def main():
                 if B:
                     listening = False
 
-                # TRACKPAD_LEFT = {
-                #     "pressed": joystick.get_button(0),
-                #     "x": joystick.get_axis(4),
-                #     "y": joystick.get_axis(5),
-                # }
+                TRACKPAD_LEFT.assign(user_input, e, joystick, 0, 4, 5)
+                TRACKPAD_LEFT.process()
 
-                TRACKPAD_RIGHT = {
-                    "pressed": joystick.get_button(1),
-                    "x": joystick.get_axis(2),
-                    "y": joystick.get_axis(3),
-                }
-
-                trackpad_pressed = TRACKPAD_RIGHT["pressed"]
-                key_was_selected = (
-                    not trackpad_pressed and
-                    first_selection is not None and
-                    final_selection is not None
-                )
-
-                if trackpad_pressed:
-                    target = pygame.Vector2(TRACKPAD_RIGHT["x"], TRACKPAD_RIGHT["y"])
-                    final_selection = target
-
-                    if first_selection is None:
-                        first_selection = target
-
-                elif key_was_selected:
-                    key = map_vector_to_key(KEYMAP, final_selection, first_selection)
-                    first_selection = None
-                    if key is None:
-                        continue
-
-                    ui.write(e.EV_KEY, key, 1)
-                    ui.syn()
-                    ui.write(e.EV_KEY, key, 0)
-                    ui.syn()
+                TRACKPAD_RIGHT.assign(user_input, e, joystick, 1, 2, 3)
+                TRACKPAD_RIGHT.process()
 
             clock.tick(15)
 
