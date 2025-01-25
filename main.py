@@ -8,6 +8,7 @@ from evdev import uinput, ecodes as e
 def main():
 
     # TODO: make more intuitive?
+    # TODO: add a few more keys like ,.!?!_
     KEYMAP = [
         [
             [
@@ -51,8 +52,8 @@ def main():
             ],
             [
                 [None, None, None],
-                [None, e.KEY_F, None],
-                [None, e.KEY_I, e.KEY_Z],
+                [e.KEY_DOT, e.KEY_F, e.KEY_SLASH],
+                [e.KEY_COMMA, e.KEY_I, e.KEY_Z],
             ],
             [
                 [None, None, None],
@@ -86,6 +87,7 @@ def main():
                     del joysticks[event.instance_id]
 
             for joystick in joysticks.values():
+                # TODO: enter and exit typing mode
                 B = joystick.get_button(3)
                 if B:
                     listening = False
