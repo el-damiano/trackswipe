@@ -26,8 +26,8 @@ class Trackpad():
         self.__pressed = 0
         self.__x = 0.0
         self.__y = 0.0
-        self.__first_selection = None
-        self.__final_selection = None
+        self.__selection_first = None
+        self.__selection_last = None
 
     def assign(self, user_input, event_codes, joystick, pressed_idx, x_idx, y_idx) -> None:
         """Meant to be called each tick.
@@ -92,20 +92,20 @@ class Trackpad():
 
         key_was_selected = (
             not self.__pressed and
-            self.__first_selection is not None and
-            self.__final_selection is not None
+            self.__selection_first is not None and
+            self.__selection_last is not None
         )
 
         if self.__pressed:
             target = pygame.Vector2(self.__x, self.__y)
-            self.__final_selection = target
+            self.__selection_last = target
 
-            if self.__first_selection is None:
-                self.__first_selection = target
+            if self.__selection_first is None:
+                self.__selection_first = target
 
         elif key_was_selected:
-            key = self.__map_vector_to_key(self.keymap, self.__final_selection, self.__first_selection)
-            self.__first_selection = None
+            key = self.__map_vector_to_key(self.keymap, self.__selection_last, self.__selection_first)
+            self.__selection_first = None
             if key is None:
                 return
 
