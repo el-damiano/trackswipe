@@ -71,7 +71,7 @@ def main():
     clock = pygame.time.Clock()
 
     mode_switch_cooldown = 100
-    mode_typing_active = False
+    mode_typing_active = True
 
     pygame.joystick.init()
     joysticks = {}

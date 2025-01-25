@@ -1,3 +1,4 @@
+import os
 import math
 import pygame
 from pygame.math import Vector2
@@ -15,7 +16,7 @@ class Trackpad():
         self.keymap = keymap
         self.rotation_angle = rotation_angle  # used to rotate the trackpad angle
 
-        self.__grid_ratio = 0.33
+        self.__grid_ratio = 1.33
         self.user_input = 0
         self.event_codes = 0
         self.joystick = 0
@@ -56,27 +57,40 @@ class Trackpad():
         nan_to_zero(source)
         nan_to_zero(target)
 
-        def vector_part(vec):
+        def remap_vector(vec):
+            rotated = vec.rotate(self.rotation_angle)
+            return rotated + Vector2(1, 1)
+
+        def vector_snap(vec):
             vec.x = (vec.x > self.__grid_ratio) + (vec.x >= -self.__grid_ratio)
             vec.y = (vec.y > self.__grid_ratio) + (vec.y >= -self.__grid_ratio)
             return vec
 
-        # rotating because Steam Controller trackpads are at an angle
-        target_rotated = target.rotate(self.rotation_angle)
-        source_rotated = source.rotate(self.rotation_angle)
+        def get_extension(source, target):
+            difference = source - target
+            # print(f"diff: {difference}")
+            return Vector2(0, 0)
 
-        target_new = vector_part(target_rotated)
-        source_new = vector_part(source_rotated)
+        # # rotating because Steam Controller trackpads are at an angle
+        # source_rotated = source.rotate(self.rotation_angle)
+        # target_rotated = target.rotate(self.rotation_angle)
+        # extension = get_extension(source_rotated, target_rotated)
 
-        # unpacking them because Vector2 stores float values
-        target_x, target_y = int(target_new.x), int(target_new.y)
-        source_x, source_y = int(source_new.x), int(source_new.y)
+        source_remapped = remap_vector(source)
+        target_remapped = remap_vector(target)
 
-        # right now I'm simply accessing absolute positions in the matrix
-        # this feels stiff
-        # TODO: improve by using a relative vector
-        mapping_target = mappings[source_y][source_x][target_y][target_x]
-        return mapping_target
+        print(f"source before: {source}")
+        print(f"target before: {target}")
+        #
+        # print(f"source remapped: {source_remapped}")
+        # print(f"target remapped: {target_remapped}")
+        #
+        # print(f"source snapped: {vector_snap(source_remapped)}")
+        # print(f"target snapped: {vector_snap(target_remapped)}")
+
+        print(f"length between: {target_remapped - source_remapped}")
+
+        return None
 
     def process(self) -> None:
         """Meant to be called each tick.
