@@ -86,9 +86,9 @@ class Trackpad():
         if self.user_input == 0 or self.event_codes == 0:
             return
 
-        self.__pressed = self.joystick.get_button(self.pressed_idx)
         self.__x = self.joystick.get_axis(self.x_idx)
         self.__y = self.joystick.get_axis(self.y_idx)
+        self.__pressed = abs(self.__x) != 0.0 and abs(self.__y) != 0.0
 
         key_was_selected = (
             not self.__pressed and
