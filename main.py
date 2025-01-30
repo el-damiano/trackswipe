@@ -8,6 +8,7 @@ from evdev import uinput, ecodes as e
 def main():
 
     # TODO: make more intuitive?
+    # TODO: add a few more keys like ,.!?!_
     KEYMAP = [
         [
             [
@@ -65,16 +66,12 @@ def main():
     TRACKPAD_LEFT = Trackpad(KEYMAP, 20)
     TRACKPAD_RIGHT = Trackpad(KEYMAP, -20)
 
-    FPS = 15
     listening = True
-    global_cooldown = 0
-    clock = pygame.time.Clock()
-
-    mode_switch_cooldown = 100
-    mode_typing_active = True
-
     pygame.joystick.init()
     joysticks = {}
+    clock = pygame.time.Clock()
+    first_selection = None
+    final_selection = None
 
     with uinput.UInput() as user_input:
         while listening:
@@ -90,19 +87,10 @@ def main():
                     del joysticks[event.instance_id]
 
             for joystick in joysticks.values():
-                B_PRESSED = joystick.get_button(3)
-                if B_PRESSED:
+                # TODO: enter and exit typing mode
+                B = joystick.get_button(3)
+                if B:
                     listening = False
-
-                Y_PRESSED = joystick.get_button(5)
-                if Y_PRESSED:
-                    global_cooldown += clock.get_time()
-                    if global_cooldown > mode_switch_cooldown:
-                        global_cooldown = 0
-                        mode_typing_active = not mode_typing_active
-
-                if not mode_typing_active:
-                    continue
 
                 TRACKPAD_LEFT.assign(user_input, e, joystick, 0, 4, 5)
                 TRACKPAD_LEFT.process()
@@ -110,7 +98,7 @@ def main():
                 TRACKPAD_RIGHT.assign(user_input, e, joystick, 1, 2, 3)
                 TRACKPAD_RIGHT.process()
 
-            clock.tick(FPS)
+            clock.tick(15)
 
 
 if __name__ == "__main__":

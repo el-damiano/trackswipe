@@ -1,4 +1,3 @@
-import os
 import math
 import pygame
 from pygame.math import Vector2
@@ -16,7 +15,7 @@ class Trackpad():
         self.keymap = keymap
         self.rotation_angle = rotation_angle  # used to rotate the trackpad angle
 
-        self.__grid_ratio = 1.33
+        self.__grid_ratio = 0.33
         self.user_input = 0
         self.event_codes = 0
         self.joystick = 0
@@ -27,8 +26,8 @@ class Trackpad():
         self.__pressed = 0
         self.__x = 0.0
         self.__y = 0.0
-        self.__selection_first = None
-        self.__selection_last = None
+        self.__first_selection = None
+        self.__final_selection = None
 
     def assign(self, user_input, event_codes, joystick, pressed_idx, x_idx, y_idx) -> None:
         """Meant to be called each tick.
@@ -57,40 +56,27 @@ class Trackpad():
         nan_to_zero(source)
         nan_to_zero(target)
 
-        def remap_vector(vec):
-            rotated = vec.rotate(self.rotation_angle)
-            return rotated + Vector2(1, 1)
-
-        def vector_snap(vec):
+        def vector_part(vec):
             vec.x = (vec.x > self.__grid_ratio) + (vec.x >= -self.__grid_ratio)
             vec.y = (vec.y > self.__grid_ratio) + (vec.y >= -self.__grid_ratio)
             return vec
 
-        def get_extension(source, target):
-            difference = source - target
-            # print(f"diff: {difference}")
-            return Vector2(0, 0)
+        # rotating because Steam Controller trackpads are at an angle
+        target_rotated = target.rotate(self.rotation_angle)
+        source_rotated = source.rotate(self.rotation_angle)
 
-        # # rotating because Steam Controller trackpads are at an angle
-        # source_rotated = source.rotate(self.rotation_angle)
-        # target_rotated = target.rotate(self.rotation_angle)
-        # extension = get_extension(source_rotated, target_rotated)
+        target_new = vector_part(target_rotated)
+        source_new = vector_part(source_rotated)
 
-        source_remapped = remap_vector(source)
-        target_remapped = remap_vector(target)
+        # unpacking them because Vector2 stores float values
+        target_x, target_y = int(target_new.x), int(target_new.y)
+        source_x, source_y = int(source_new.x), int(source_new.y)
 
-        print(f"source before: {source}")
-        print(f"target before: {target}")
-        #
-        # print(f"source remapped: {source_remapped}")
-        # print(f"target remapped: {target_remapped}")
-        #
-        # print(f"source snapped: {vector_snap(source_remapped)}")
-        # print(f"target snapped: {vector_snap(target_remapped)}")
-
-        print(f"length between: {target_remapped - source_remapped}")
-
-        return None
+        # right now I'm simply accessing absolute positions in the matrix
+        # this feels stiff
+        # TODO: improve by using a relative vector
+        mapping_target = mappings[source_y][source_x][target_y][target_x]
+        return mapping_target
 
     def process(self) -> None:
         """Meant to be called each tick.
@@ -106,20 +92,20 @@ class Trackpad():
 
         key_was_selected = (
             not self.__pressed and
-            self.__selection_first is not None and
-            self.__selection_last is not None
+            self.__first_selection is not None and
+            self.__final_selection is not None
         )
 
         if self.__pressed:
             target = pygame.Vector2(self.__x, self.__y)
-            self.__selection_last = target
+            self.__final_selection = target
 
-            if self.__selection_first is None:
-                self.__selection_first = target
+            if self.__first_selection is None:
+                self.__first_selection = target
 
         elif key_was_selected:
-            key = self.__map_vector_to_key(self.keymap, self.__selection_last, self.__selection_first)
-            self.__selection_first = None
+            key = self.__map_vector_to_key(self.keymap, self.__final_selection, self.__first_selection)
+            self.__first_selection = None
             if key is None:
                 return
 
