@@ -1,9 +1,5 @@
 # TODO: rewrite in a better language for Steam Input integration and portability
 
-# RIP projected hit a halt due to some update changing how the controller
-# inputs are being processed, interpreting the left trackpad as a hat rather
-# than two axes
-
 import pygame
 
 from trackpad import Trackpad
@@ -67,9 +63,8 @@ def main():
         ]
     ]
 
-    # TODO: try to recognize left trackpad as a joystick rather than hat
-    # TRACKPAD_LEFT = Trackpad(KEYMAP, 20)
-    TRACKPAD_RIGHT = Trackpad(KEYMAP, -15)
+    TRACKPAD_LEFT = Trackpad(KEYMAP, 20)
+    TRACKPAD_RIGHT = Trackpad(KEYMAP, -20)
 
     listening = True
     pygame.joystick.init()
@@ -92,13 +87,12 @@ def main():
                     del joysticks[event.instance_id]
 
             for joystick in joysticks.values():
-                # TODO: enter and exit typing mode
-                B = joystick.get_button(1)
+                B = joystick.get_button(3)
                 if B:
                     listening = False
 
-                # TRACKPAD_LEFT.assign(user_input, e, joystick, 0, 4, 5)
-                # TRACKPAD_LEFT.process()
+                TRACKPAD_LEFT.assign(user_input, e, joystick, 0, 4, 5)
+                TRACKPAD_LEFT.process()
 
                 TRACKPAD_RIGHT.assign(user_input, e, joystick, 1, 2, 3)
                 TRACKPAD_RIGHT.process()
