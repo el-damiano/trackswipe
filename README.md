@@ -1,3 +1,6 @@
+
+[demo.webm](https://github.com/user-attachments/assets/bb199a8d-d5dd-41a5-b968-6d1c78df7758)
+
 Just a simple proof of concept of how a more thumb-friendly keyboard would work
 with the Steam Controller and Steam Deck. It's rough around the edges, but has
 got great potential.
